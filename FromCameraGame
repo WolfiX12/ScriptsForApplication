@@ -1,0 +1,181 @@
+
+local plr = game.Players.LocalPlayer
+local db = false
+local Debris = game:GetService("Debris")
+local CopyPaste = nil
+
+
+function PartToRegion3(Cfr)
+	--Not mine
+	local abs = math.abs
+
+	local cf = Cfr+Cfr.LookVector * 10
+	local size = Vector3.new(24.037, 10.139, 20.175)
+	local sx, sy, sz = size.X, size.Y, size.Z
+
+	local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = cf:components()
+	local wsx = 0.5 * (abs(R00) * sx + abs(R01) * sy + abs(R02) * sz)
+	local wsy = 0.5 * (abs(R10) * sx + abs(R11) * sy + abs(R12) * sz)
+	local wsz = 0.5 * (abs(R20) * sx + abs(R21) * sy + abs(R22) * sz)
+
+
+	local minx = x - wsx
+	local miny = y - wsy
+	local minz = z - wsz
+
+	local maxx = x + wsx
+	local maxy = y + wsy
+	local maxz = z + wsz
+
+	local minv, maxv = Vector3.new(minx, miny, minz), Vector3.new(maxx, maxy, maxz)
+	
+	return Region3.new(minv, maxv)
+end
+
+
+game.ReplicatedStorage.Photo.OnServerEvent:Connect(function(plr, Site, Cfr)
+	
+	if Site == "Left" then
+		if CopyPaste  then
+			CopyPaste:Destroy()
+			CopyPaste = nil
+			
+			if game.ReplicatedStorage:FindFirstChild("PhotoBlock") then
+				game.ReplicatedStorage:FindFirstChild("PhotoBlock"):Destroy()
+			end
+		end
+		--local part = Instance.new("Part", workspace)
+		--part.Anchored = true
+		
+		local Region = PartToRegion3(Cfr)
+		
+		--local part1 = Instance.new("Part", workspace)
+		--part1.Anchored = true
+		--part1.CFrame = Region.CFrame
+		
+		print(Region.CFrame)
+		
+		local IfAncored = 0
+
+		local Tcp = workspace:FindPartsInRegion3(Region)
+		print(Tcp) 
+		if #Tcp ~= 0  then
+			local partsList = {}
+			
+			local Model = Instance.new("Model", game.ReplicatedStorage)
+			Model.Name = "PhotoBlock"
+			CopyPaste = Model
+			
+			local PositionBlock = Instance.new("Part",workspace)
+			PositionBlock.CFrame =  Cfr
+			PositionBlock.Anchored = true
+			PositionBlock.Transparency = 1
+			PositionBlock.CanCollide = false
+			PositionBlock.Parent = Model
+			PositionBlock.Size = Vector3.new(1, 1, 1)
+			PositionBlock:AddTag("CanCopy")
+
+			Model.PrimaryPart = PositionBlock
+			Model.Name = "PhotoBlock"
+
+			for i, v in pairs(Tcp) do
+				if v:IsA("Part") or v:IsA("UnionOperation")  then
+					
+					
+					if not v:HasTag("CanCopy") and v.CollisionGroup == "Default" and v.Parent.Parent.Name ~= "PhotoStorage" and not v:FindFirstChildOfClass("MeshPart") and not v:FindFirstChildOfClass("CharacterMesh") and not v:FindFirstChildOfClass("SpecialMesh") then
+						print(v.Parent.Parent.Name)
+						local HitBox = Instance.new("Part",workspace)
+						HitBox.CFrame =  Cfr+Cfr.LookVector * 10
+						HitBox.Size = Vector3.new(24.037, 10.139, 20.175)
+						HitBox.Anchored = true
+						HitBox.CanCollide = false
+						HitBox.Transparency = 1
+						HitBox.CollisionGroup = "Photo"
+
+						Debris:AddItem(HitBox, 1)
+						print(v.ClassName)
+						local a = HitBox:IntersectAsync({v})
+						print(v.ClassName)
+						if a then
+							print(v:GetTags())
+							a.Parent = Model
+							a:AddTag("CanCopy")
+							a.Anchored = v.Anchored
+							a.Transparency = v.Transparency
+							a.CanCollide = v.CanCollide
+							a.Material = v.Material
+							a.MaterialVariant = v.MaterialVariant
+							a.Name = v.Name
+						end
+						
+
+						for i, v in pairs(v:GetChildren()) do
+
+							local cln = v:Clone()
+							cln.Parent = a
+
+						end
+
+						table.insert(partsList, v)
+						
+					end
+					
+				
+					
+				elseif not v:HasTag("CanCopy") and v.CollisionGroup == "Default" then
+					
+					local nw = v:Clone()
+					nw:AddTag("CanCopy")
+					nw.Parent = Model
+					
+					
+				end
+			end
+				
+				
+				--local a = HitBox2:IntersectAsync(partsList)
+				--a.Parent = Model
+				
+				
+				--if IfAncored > 1 then
+				--	a.Anchored = true
+				--else
+				--	a.Anchored = false
+				--end
+				--a.UsePartColor = true
+				--a.Color = Color3.fromRGB(124, 124, 124)
+				
+				--a.Material = Enum.Material.Fabric
+			
+				
+			
+
+		end
+	else
+		
+		if CopyPaste  then
+			
+			
+			
+			
+			local clnC = CopyPaste:Clone()
+			
+			clnC.Parent = workspace.PhotoStorage
+			clnC.Name = #workspace.PhotoStorage:GetChildren() + 1
+			clnC:SetPrimaryPartCFrame( Cfr)
+			if #workspace.PhotoStorage:GetChildren() >= 10 then
+				workspace.PhotoStorage:FindFirstChildOfClass("Model"):Destroy()
+			end
+			
+			
+			
+			
+		end
+		
+	end
+	
+	
+	
+	
+end)
+

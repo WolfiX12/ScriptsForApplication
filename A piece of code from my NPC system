@@ -1,0 +1,71 @@
+function Move()
+	local Path = Path()
+	
+	if not Path then return end 
+	
+	local waypoints = Path:GetWaypoints()
+	Monster.PrimaryPart:SetNetworkOwner(nil)
+	--[[workspace.Waypoints:ClearAllChildren()
+	for i, waypoint in pairs(waypoints) do
+
+
+		local Viz = Instance.new("Part", workspace.Waypoints)
+		Viz.Anchored = true
+		Viz.Name = "Waypoint"..tostring(waypoint)
+		Viz.Size = Vector3.new(1,1,1)
+		Viz.Position = waypoint.Position
+		Viz.Material = Enum.Material.Neon
+		Viz.CanCollide = false
+
+	end
+	]]
+	
+	for i,waypoint in pairs(waypoints) do
+			if #waypoints > 3 then
+
+				if i > 2 then
+
+					MHumanoid:MoveTo(waypoint.Position)
+					currentTarget = script.Parent:GetAttribute('CurrentTarget')
+					if (waypoints[#waypoints].Position -(targetHRP.Position + Vector3.new(targetHRP.Parent:FindFirstChildOfClass("Humanoid").MoveDirection.X * Plus, 0, targetHRP.Parent:FindFirstChildOfClass("Humanoid").MoveDirection.Z * Plus)) ).Magnitude >  5.9 or script.Parent:GetAttribute('CurrentTarget') ~= currentTarget then
+
+						Move()
+						break
+					end
+
+
+					MHumanoid.MoveToFinished:Wait()
+
+				end
+
+		else
+			
+				print("hum")
+				MHumanoid:MoveTo(targetHRP.Position)
+				currentTarget = script.Parent:GetAttribute('CurrentTarget')
+			if (waypoints[#waypoints].Position -(targetHRP.Position + Vector3.new(targetHRP.Parent:FindFirstChildOfClass("Humanoid").MoveDirection.X * Plus, 0, targetHRP.Parent:FindFirstChildOfClass("Humanoid").MoveDirection.Z * Plus)) ).Magnitude >  5.9 or script.Parent:GetAttribute('CurrentTarget') ~= currentTarget then
+
+					Move()
+					break
+				end
+
+				MHumanoid.MoveToFinished:Wait()
+
+			end	
+		
+		
+
+				
+	end
+		
+	waypoints = nil
+
+	if stop == false and waypoints then
+			if  #waypoints ~= 0 then
+          print("For Debug")
+			end
+		Move()
+	end
+	
+	
+end
